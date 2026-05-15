@@ -78,14 +78,14 @@ def add_to_cart(call):
 @bot.message_handler(func=lambda message: message.text == "Buyurtmalarim")
 def show_cart(message):
     user_id = message.from_user.id
-    global gift
+    
     if user_id in cart and cart[user_id]:
         order_summary = "Sizning buyurtmalaringiz:\n"
         total_price = 0
 
         for item_key in cart[user_id]:
             item = menu[item_key]
-            order_summary += f"{item['name']} - {item['price']} sum- (gift: {gift})\n"
+            order_summary += f"{item['name']} - {item['price']} sum\n"
             total_price += item['price']
 
         order_summary += f"\nJami: {total_price} sum"
@@ -136,7 +136,15 @@ def receive_address(message):
     markup.add(buutton, buutton1)
 
     bot.send_message(message.chat.id, text, reply_markup=markup)
-        
+
+@bot.callback_query_handler(func=lambda call: call.data == "get_gift")
+def get_gift(call):
+    global gift
+    user_id = call.from_user.id
+    if user_id not in gift:
+        gift[user_id] = True
+        bot.send_message(call.message.chat.id, "Sizga sovg'a beriladi!")
+
 @bot.callback_query_handler(func=lambda call: call.data == "tasdiqlash")
 def confirm_order(call):
     user_id = call.from_user.id
