@@ -137,7 +137,7 @@ def receive_address(message):
 
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data == "get_gift")
+@bot.callback_query_handler(func=lambda call: call.data == "gift")
 def get_gift(call):
     global gift
     user_id = call.from_user.id
