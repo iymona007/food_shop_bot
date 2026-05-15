@@ -78,14 +78,14 @@ def add_to_cart(call):
 @bot.message_handler(func=lambda message: message.text == "Buyurtmalarim")
 def show_cart(message):
     user_id = message.from_user.id
-
+    global gift
     if user_id in cart and cart[user_id]:
         order_summary = "Sizning buyurtmalaringiz:\n"
         total_price = 0
 
         for item_key in cart[user_id]:
             item = menu[item_key]
-            order_summary += f"{item['name']} - {item['price']} sum\n"
+            order_summary += f"{item['name']} - {item['price']} sum- (gift: {gift})\n"
             total_price += item['price']
 
         order_summary += f"\nJami: {total_price} sum"
