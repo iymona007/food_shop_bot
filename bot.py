@@ -4,11 +4,12 @@ import telebot
 import os
 from dotenv import load_dotenv
 from telebot import types
+from flask import Flask, request
 load_dotenv()   
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
-
+app = Flask(__name__) 
 user_state = {}
 
 @bot.message_handler(commands=['start'])
@@ -152,7 +153,5 @@ def webhook():
 
 if __name__ == '__main__':
     bot.remove_webhook()
-    bot.set_webhook(url='https://bot-t6re.onrender.com/webhook')
+    bot.set_webhook(url='https://food-shop-bot.onrender.com/webhook')
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
-bot.infinity_polling()
