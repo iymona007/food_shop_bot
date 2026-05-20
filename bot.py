@@ -19,7 +19,6 @@ def start(message):
     
     markup.add("Menu")
     markup.add("Buyurtmalarim")
-    markup.add("sovg'a")
 
     bot.send_message(message.chat.id, "Xush kelibsiz \n Siz bu yeerda fast food buyurtma qilishingiz mumkin", reply_markup=markup)
 menu ={
@@ -36,21 +35,6 @@ def show_gift(message):
     markup.add(button) 
     bot.send_message(message.chat.id, "Sizga sovg'a beramiz!", reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data == "get_gift")
-def get_gift(call):
-    gifts = [
-    "🥤 Bepul Coca Cola",
-    "🍟 Bepul Fries",
-    "🎉 10% chegirma",
-    "🚚 Bepul доставка",
-    ]
-
-    gift = random.choice(gifts)
-
-    bot.send_message(
-        call.message.chat.id,
-        f"Sizning sovg'angiz:\n{gift}"
-    )
 
 cart= {}
 @bot.message_handler(func=lambda message: message.text == "Menu")
@@ -137,13 +121,7 @@ def receive_address(message):
 
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data == "gift")
-def get_gift(call):
-    global gift
-    user_id = call.from_user.id
-    if user_id not in gift:
-        gift[user_id] = True
-        bot.send_message(call.message.chat.id, "Sizga sovg'a beriladi!")
+
 
 @bot.callback_query_handler(func=lambda call: call.data == "tasdiqlash")
 def confirm_order(call):
