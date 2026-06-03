@@ -35,24 +35,14 @@ menu ={
 cart= {}
 @bot.message_handler(func=lambda message: message.text == "Menu")
 def show_menu(message):
-
-    for item_key, item in menu.items():
+    for key, item in menu.items():
         markup = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("Savatga qo'shish", callback_data=f"add_{item_key}")
+        button = types.InlineKeyboardButton("Savatga qo'shish", callback_data=f'add_{key}')
         markup.add(button)
-        
-        img = Image.open(item['photo'])
-        img.thumbnail((800, 800))
+        with open(item['photo'], 'rb') as photo:
+            bot.send_photo(message.chat.id, photo, caption=f'{item["name"]} - {item["price"]} sum\n{item["description"]}', reply_markup=markup)
 
-        canvas = Image.new("RGB", (800, 800), "white")
-        x = (800 - img.width) // 2
-        y = (800 - img.height) // 2
-        canvas.paste(img, (x, y))
-
-        photo = BytesIO()
-        canvas.save(photo, format="JPEG")
-        photo.seek(0)
-        bot.send_photo(message.chat.id, photo, caption=f"{item['name']} - {item['price']} sum\n{item['description']}", reply_markup=markup)
+            
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_'))
 def add_to_cart(call):
     user_id = call.from_user.id
