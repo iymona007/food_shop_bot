@@ -41,18 +41,13 @@ def show_menu(message):
         button = types.InlineKeyboardButton("Savatga qo'shish", callback_data=f"add_{item_key}")
         markup.add(button)
         
-        img = Image.open(item['photo'])
-        img.thumbnail((800, 800))
+        bot.send_message(
+            message.chat.id,
+            f"{item['name']} - {item['price']} sum\n{item['description']}",
+            reply_markup=markup
+            )
+        bot.send_photo(message.chat.id, open(item['photo'], 'rb'))
 
-        canvas = Image.new("RGB", (800, 800), "white")
-        x = (800 - img.width) // 2
-        y = (800 - img.height) // 2
-        canvas.paste(img, (x, y))
-
-        photo = BytesIO()
-        canvas.save(photo, format="JPEG")
-        photo.seek(0)
-        bot.send_photo(message.chat.id, photo, caption=f"{item['name']} - {item['price']} sum\n{item['description']}", reply_markup=markup)
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_'))
 def add_to_cart(call):
     user_id = call.from_user.id
