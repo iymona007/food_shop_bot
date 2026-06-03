@@ -1,4 +1,3 @@
-from tkinter import Image
 from unittest.mock import call
 import random
 import PIL
