@@ -28,7 +28,7 @@ menu ={
     'Burger': {"name": "Burger", "price": 25000, "photo":"images/burger.avif", 'description': "Burgerning ichida go'sht, pishloq, pomidor, marul va boshqa ingredientlardan iborat. 🍔"},
     'Pizza': {"name": "Pizza", "price": 40000, "photo":"images/pizza.avif",'description': "Pizzaning ichida pomidor sousi, pishloq va turli xil qo'shimchalar bilan iborat. 🍕"},
     'Hot Dog': {"name": "Hot Dog", "price": 15000, "photo":"images/hotdog.jpg",'description': "Hot Dogning ichida kolbasa, ketchup, xantal va boshqa ingredientlardan iborat. 🌭"},
-    'Coca Cola': {"name": "Coca Cola", "price": 10000, "photo":"images/cocacola.jpg", 'description': "0,5 litr. 🥤"},
+    'Coca Cola': {"name": "Coca Cola", "price": 10000, "photo":"images/cocacola.jpg", 'description': "0,5 litr."},
 }
 
 
@@ -41,13 +41,18 @@ def show_menu(message):
         button = types.InlineKeyboardButton("Savatga qo'shish", callback_data=f"add_{item_key}")
         markup.add(button)
         
-        bot.send_message(
-            message.chat.id,
-            f"{item['name']} - {item['price']} sum\n{item['description']}",
-            reply_markup=markup
-            )
-        bot.send_photo(message.chat.id, open(item['photo'], 'rb'))
+        img = Image.open(item['photo'])
+        img.thumbnail((800, 800))
 
+        canvas = Image.new("RGB", (800, 800), "white")
+        x = (800 - img.width) // 2
+        y = (800 - img.height) // 2
+        canvas.paste(img, (x, y))
+
+        photo = BytesIO()
+        canvas.save(photo, format="JPEG")
+        photo.seek(0)
+        bot.send_photo(message.chat.id, photo, caption=f"{item['name']} - {item['price']} sum\n{item['description']}", reply_markup=markup)
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_'))
 def add_to_cart(call):
     user_id = call.from_user.id
