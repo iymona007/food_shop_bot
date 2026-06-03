@@ -1,7 +1,11 @@
+from tkinter import Image
 from unittest.mock import call
 import random
+import PIL
 import telebot
 import os
+from PIL import Image
+from io import BytesIO
 from dotenv import load_dotenv
 from telebot import types
 from flask import Flask, request
@@ -22,31 +26,34 @@ def start(message):
 
     bot.send_message(message.chat.id, "Xush kelibsiz \n Siz bu yeerda fast food buyurtma qilishingiz mumkin", reply_markup=markup)
 menu ={
-    'Burger': {"name": "Burger", "price": 25000, 'description': "Burgerning ichida go'sht, pishloq, pomidor, marul va boshqa ingredientlardan iborat."},
-    'Pizza': {"name": "Pizza", "price": 40000, 'description': "Pizzaning ichida pomidor sousi, pishloq va turli xil qo'shimchalar bilan iborat."},
-    'Hot Dog': {"name": "Hot Dog", "price": 15000, 'description': "Hot Dogning ichida kolbasa, ketchup, xantal va boshqa ingredientlardan iborat."},
-    'Coca Cola': {"name": "Coca Cola", "price": 10000, 'description': "0,5 litr."},
+    'Burger': {"name": "Burger", "price": 25000, "photo":"images/burger.avif", 'description': "Burgerning ichida go'sht, pishloq, pomidor, marul va boshqa ingredientlardan iborat. 🍔"},
+    'Pizza': {"name": "Pizza", "price": 40000, "photo":"images/pizza.avif",'description': "Pizzaning ichida pomidor sousi, pishloq va turli xil qo'shimchalar bilan iborat. 🍕"},
+    'Hot Dog': {"name": "Hot Dog", "price": 15000, "photo":"images/hotdog.jpg",'description': "Hot Dogning ichida kolbasa, ketchup, xantal va boshqa ingredientlardan iborat. 🌭"},
+    'Coca Cola': {"name": "Coca Cola", "price": 10000, "photo":"images/cocacola.jpg", 'description': "0,5 litr. 🥤"},
 }
-
-@bot.message_handler(func=lambda message: message.text == "sovg'a")
-def show_gift(message):
-    markup = types.InlineKeyboardMarkup()
-    button = types.InlineKeyboardButton("Sovg'a olish", callback_data="get_gift")
-    markup.add(button) 
-    bot.send_message(message.chat.id, "Sizga sovg'a beramiz!", reply_markup=markup)
 
 
 cart= {}
 @bot.message_handler(func=lambda message: message.text == "Menu")
 def show_menu(message):
 
-    markup = types.InlineKeyboardMarkup()
-
-    for key, item in menu.items():
-        button = types.InlineKeyboardButton(f'{item["name"]} - {item["price"]} sum', callback_data=f'add_{key}')
+    for item_key, item in menu.items():
+        markup = types.InlineKeyboardMarkup()
+        button = types.InlineKeyboardButton("Savatga qo'shish", callback_data=f"add_{item_key}")
         markup.add(button)
-    bot.send_message(message.chat.id, "Bizning menyuimiz:", reply_markup=markup)
+        
+        img = Image.open(item['photo'])
+        img.thumbnail((800, 800))
 
+        canvas = Image.new("RGB", (800, 800), "white")
+        x = (800 - img.width) // 2
+        y = (800 - img.height) // 2
+        canvas.paste(img, (x, y))
+
+        photo = BytesIO()
+        canvas.save(photo, format="JPEG")
+        photo.seek(0)
+        bot.send_photo(message.chat.id, photo, caption=f"{item['name']} - {item['price']} sum\n{item['description']}", reply_markup=markup)
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_'))
 def add_to_cart(call):
     user_id = call.from_user.id
@@ -109,7 +116,7 @@ def receive_address(message):
     
     for item_key in items:
         item = menu[item_key]
-        text = f"{item['name']} - {item['price']} sum\n"
+        text = f'{item["name"]} - {item["price"]} sum\n'
         total = item['price']
 
     text += f"\nJami: {total} sum\nManzil: {address}\n\nBuyurtmangiz qabul qilindi! Tez orada yetkazib beramiz."
@@ -129,6 +136,11 @@ def confirm_order(call):
     cart[user_id] = []
     bot.send_message(call.message.chat.id, "Buyurtmangiz tasdiqlandi! Tez orada yetkazib beramiz.") 
 
+@bot.callback_query_handler(func=lambda call: call.data == 'bekor qilish')
+def cancel_order0(call):
+    cart[call.from_user.id] = []
+    bot.send_message(call.message.chat.id, "Buyurtma bekor qilindi!")
+
     
 @app.route('/webhook', methods=['POST'])
 def webhook():  
@@ -141,3 +153,4 @@ if __name__ == '__main__':
     bot.remove_webhook()
     bot.set_webhook(url='https://food-shop-bot.onrender.com/webhook')
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
